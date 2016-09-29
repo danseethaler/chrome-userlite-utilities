@@ -1,0 +1,66 @@
+{
+    "manifest_version": 2,
+    "name": "Userlite Utitlies",
+    "description": "Utitlies for Userlite developers",
+    "version": "1.7",
+    "icons": {
+        "16": "icons/icon_16.png",
+        "19": "icons/icon_19.png",
+        "48": "icons/icon_48.png"
+    },
+    "browser_action": {
+        "default_icon": "icons/icon_48.png",
+        "default_popup": "page_action.html"
+    },
+    "permissions": [
+        "clipboardRead",
+        "clipboardWrite",
+        "activeTab",
+        "http://*.userlite.com/*",
+        "https://*.userlite.com/*",
+        "http://establishbalance.hostdev14sites.userlite.com/*"
+    ],
+    "background": {
+        "scripts": ["js/background.js"]
+    },
+    "commands": {
+        "reload-hfrag-level-1": {
+            "suggested_key": {
+                "default": "Alt+1",
+                "mac": "Alt+1"
+            },
+            "description": "Reload hFrag level 1"
+        },
+        "reload-hfrag-level-2": {
+            "suggested_key": {
+                "default": "Alt+2",
+                "mac": "Alt+2"
+            },
+            "description": "Reload hFrag level 2"
+        },
+        "reload-hfrag-level-3": {
+            "suggested_key": {
+                "default": "Alt+3",
+                "mac": "Alt+3"
+            },
+            "description": "Reload hFrag level 3"
+        },
+        "reload-hfrag-level-4": {
+            "suggested_key": {
+                "default": "Alt+4",
+                "mac": "Alt+4"
+            },
+            "description": "Reload hFrag level 4"
+        }
+    },
+    "content_scripts": [{
+        "matches": [
+            "http://*/*",
+            "https://*/*"
+        ],
+        "js": [
+            "js/jquery-3.1.0.min.js",
+            "js/content_script.js"
+        ]
+    }]
+}

@@ -1,0 +1,38 @@
+#main {
+    width: 300px;
+}
+.btn {
+    border-radius: 3px;
+    border: none;
+    padding: 5px 10px;
+    margin: 2px auto;
+    display: inline-block;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: #67B8DE;
+    font-size: 1.3em;
+}
+.location-btn {
+    width: calc(100% - 44px);
+}
+.reload-btn {
+    width: 40px;
+}
+
+.button-0 {
+    background-color: #E8F8FF;
+}
+.button-1 {
+    background-color: #B4DCED;
+}
+.button-2 {
+    background-color: #91C9E8;
+}
+.button-3 {
+    background-color: #67B8DE;
+    color: #FFF;
+}
+.button-4 {
+    background-color: #2E8AB8;
+    color: #FFF;
+}

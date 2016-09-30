@@ -11,8 +11,26 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
         if (document.getElementById("mainframe")) {
             var uslIframe = document.getElementById("mainframe").contentDocument;
             var metas = uslIframe.getElementsByTagName('meta')
+
+            var domHashfrags = uslIframe.getElementsByClassName('hashFrag');
+
+            config.hashNodes = [];
+            for (var i = 0; i < domHashfrags.length; i++) {
+                config.hashNodes.push(domHashfrags[i].dataset.hashfragName);
+            }
+            config.hashNodes.reverse();
+
         } else {
             var metas = document.getElementsByTagName('meta');
+
+            var domHashfrags = document.getElementsByClassName('hashFrag');
+
+            config.hashNodes = [];
+            for (var i = 0; i < domHashfrags.length; i++) {
+                config.hashNodes.push(domHashfrags[i].dataset.hashfragName);
+            }
+            config.hashNodes.reverse();
+
         }
 
         for (var i = 0; i < metas.length; i++) {
@@ -313,9 +331,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
 function reloadHfragNode(node) {
 
     var frame = top.frames[1];
-    if (!frame) {
-        frame = document;
-    }
+    if (!frame) frame = window;
 
     var updateHash;
     var hash = frame.location.hash;
@@ -326,7 +342,7 @@ function reloadHfragNode(node) {
         return window.location = window.location;
     }
 
-    var domHashfrags = frame.document.getElementsByClassName('hashFrag')
+    var domHashfrags = frame.document.getElementsByClassName('hashFrag');
 
     var hashNodes = [];
 

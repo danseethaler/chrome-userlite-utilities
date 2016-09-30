@@ -30,6 +30,13 @@ chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
                     for (var i = 0; i < hash.length; i++) {
 
                         var hashNodes = hash[i].split(/\||(::)+/g);
+
+                        if (hashNodes[0] && config.hashNodes) {
+                            if (config.hashNodes.indexOf(hashNodes[0]) == -1) {
+                                continue;
+                            }
+                        }
+
                         var path = '';
                         var file = '';
 

@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Userlite Utitlies",
     "description": "Utitlies for Userlite developers",
-    "version": "1.7",
+    "version": "1.8",
     "icons": {
         "16": "icons/icon_16.png",
         "19": "icons/icon_19.png",

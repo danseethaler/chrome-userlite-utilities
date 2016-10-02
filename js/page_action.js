@@ -1,3 +1,10 @@
+function reloadHashNode(e) {
+    var node = e.target.dataset.hashKey;
+    chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
+        chrome.tabs.sendMessage(tabs[0].id,{message:"reload_hfrag_interval", node}, function(config){ });
+    });
+}
+
 chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
     chrome.tabs.sendMessage(tabs[0].id,{message:"getAppId"}, function(config){
 
@@ -53,7 +60,7 @@ chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
 
                         var fullpath = path + '/' + file;
 
-                        div.innerHTML = '<div><button name="hash_' + i + '" class="location-btn btn button-' + i + '" tabindex="' + (i + 1) + '">' + fullpath + '</button> <button name="reload_' + i + '" class="reload-btn btn btn-default" data-hash-key="' + hashNodes[0] + '" style="color: #FFF" tabindex="' + ((hash.length * 2) + 2 - i) +'">&#x21ba;</button></div>';
+                        div.innerHTML = '<div><button name="hash_' + i + '" class="location-btn btn button-' + i + '" tabindex="' + (i + 1) + '">' + fullpath + '</button> <button name="reload_' + i + '" class="reload-btn btn btn-default" data-hash-key="' + i + '" style="color: #FFF" tabindex="' + ((hash.length * 2) + 2 - i) +'">&#x21ba;</button></div>';
                         // div.innerHTML = '<button name="hash_' + i + '" class="btn button-' + i + '">' + fullpath + '</button>';
 
                         // main.insertBefore(div.firstChild, main.firstChild);
@@ -72,36 +79,7 @@ chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
                     var reloadButtons = document.getElementsByClassName('reload-btn');
 
                     for (var i = 0; i < reloadButtons.length; i++) {
-                        reloadButtons[i].addEventListener('click', function(e){
-
-                            var updateUrl;
-
-                            var url = tabs[0].url;
-                            var hash = url.substr(url.indexOf('#'));
-                            hash = hash.replace('#', '');
-                            hash = hash.replace('!', '');
-                            var hashPieces = hash.split('||');
-
-                            for (var k = 0; k < hashPieces.length; k++) {
-                                var keys = hashPieces[k].split('::');
-                                if (keys[0] == e.target.dataset.hashKey) {
-
-                                    if (hashPieces[k].search(/(\|rnd:)+\d/) >= 0) {
-                                        newHash = hashPieces[k].replace(/(\|rnd:)+\d/, '|rnd:' + Math.floor(Math.random() * 9999));
-                                        updateUrl = url.replace(hashPieces[k], newHash);
-                                    } else {
-                                        updateUrl = url.replace(hashPieces[k], hashPieces[k] + '|rnd:' + Math.floor(Math.random() * 9999));
-                                    }
-
-                                }
-
-                            }
-
-                            if (updateUrl) {
-                                chrome.tabs.update(tabs[0].id, {url: updateUrl});
-                            }
-
-                        })
+                        reloadButtons[i].addEventListener('click', reloadHashNode);
                     }
 
                 } else {
@@ -153,7 +131,7 @@ function sendToClipboard(stringToClipboard) {
     sandbox.value = stringToClipboard;
     sandbox.select();
 
-    document.execCommand('copy')
+    document.execCommand('copy');
 
     sandbox.value = '';
     sandbox.style.display = "none";

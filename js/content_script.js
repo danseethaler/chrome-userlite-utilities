@@ -1,6 +1,4 @@
-
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
-
     if (message.message == 'getAppId') {
 
         var config = {
@@ -46,6 +44,31 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
 
     if (message.message == 'reload_hfrag') {
         reloadHfragNode(message.node);
+    }
+
+    if (message.message == 'reload_hfrag_interval') {
+
+        chrome.storage.sync.get({
+            refreshInterval: 5000
+        }, function(items) {
+
+            var intervalRate = parseInt(items.refreshInterval);
+            if (intervalRate < 1000) {
+                intervalRate = 1000;
+            }
+
+            var reloadId = setInterval(function(){
+                reloadHfragNode(message.node);
+            }.bind(this), intervalRate);
+
+            var frame = window.frames[1];
+            if (!frame) frame = window;
+            frame.document.addEventListener("click", function(){
+                clearTimeout(reloadId);
+            }.bind(this));
+
+        });
+
     }
 
 
@@ -322,10 +345,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
             util.formFields(formId);
 
         }
-
     }
-
-
 });
 
 function reloadHfragNode(node) {

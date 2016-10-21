@@ -4,6 +4,11 @@ function reloadHashNode(e) {
         chrome.tabs.sendMessage(tabs[0].id,{message:"reload_hfrag_interval", node}, function(config){ });
     });
 }
+function reloadPage(e) {
+    chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
+        chrome.tabs.sendMessage(tabs[0].id,{message:"reload_page_interval"}, function(config){ });
+    });
+}
 
 chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
     chrome.tabs.sendMessage(tabs[0].id,{message:"getAppId"}, function(config){
@@ -85,8 +90,15 @@ chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
                 } else {
 
                     // When no hash is found we direct the user to the pages folder in the front-end
-                    div.innerHTML = '<button name="hash_0" class="btn button-0" style="width: 100%">Pages</button>';
+                    div.innerHTML = '<div><button name="hash_0" class="btn button-0" style="width: calc(100% - 44px)">Pages</button> <button name="reload_1" class="reload-btn btn btn-default" data-hash-key="1" style="color: #FFF" tabindex="10">&#x21ba;</button></div>';
+
                     main.appendChild(div.firstChild);
+
+                    var reloadButtons = document.getElementsByClassName('reload-btn');
+
+                    for (var i = 0; i < reloadButtons.length; i++) {
+                        reloadButtons[i].addEventListener('click', reloadPage);
+                    }
 
                     var config = {
                         appSide: 'front',

@@ -71,6 +71,10 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
 
     }
 
+    if (message.message == 'reload_page_interval') {
+        reloadPage();
+    }
+
 
     if (message.message == 'collapse_sidebar') {
         document.querySelector('#liteframe').style.width = '70px';
@@ -347,6 +351,36 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
         }
     }
 });
+
+if (localStorage.getItem('usl_auto_reload')) {
+    reloadPage();
+}
+
+function reloadPage() {
+    chrome.storage.sync.get({
+        refreshInterval: 5000
+    }, function(items) {
+
+        var reloadId;
+
+        var intervalRate = parseInt(items.refreshInterval);
+        if (intervalRate < 1000) {
+            intervalRate = 1000;
+        }
+
+        localStorage.setItem('usl_auto_reload', true);
+
+        reloadId = setTimeout(function(){
+            window.location = window.location;
+        }.bind(this), intervalRate);
+
+        window.document.addEventListener("click", function(){
+            clearTimeout(reloadId);
+            localStorage.setItem('usl_auto_reload', '');
+        }.bind(this));
+
+    });
+}
 
 function reloadHfragNode(node) {
 

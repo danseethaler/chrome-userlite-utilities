@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Userlite Utitlies",
     "description": "Utitlies for Userlite developers",
-    "version": "2.0",
+    "version": "2.2",
     "icons": {
         "16": "icons/icon_16.png",
         "19": "icons/icon_19.png",
@@ -62,6 +62,8 @@
         ],
         "js": [
             "js/jquery-3.1.0.min.js",
+            "js/util.js",
+            "js/methods.js",
             "js/content_script.js"
         ]
     }]

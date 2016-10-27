@@ -3,11 +3,14 @@ function reloadHashNode(e) {
     chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
         chrome.tabs.sendMessage(tabs[0].id,{message:"reload_hfrag_interval", node}, function(config){ });
     });
+    window.close();
 }
+
 function reloadPage(e) {
     chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
         chrome.tabs.sendMessage(tabs[0].id,{message:"reload_page_interval"}, function(config){ });
     });
+    window.close();
 }
 
 chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
@@ -102,6 +105,10 @@ chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
                         appId: parseInt(config.appId),
                     };
 
+                    document.querySelector('.reload-btn').addEventListener('click', () => {
+                        reloadPage();
+                    });
+
                     addListener("button[name='hash_" + i + "']", JSON.stringify(config, null, 4));
 
                 }
@@ -127,11 +134,6 @@ chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
     });
 });
 
-// This function is mostly to scope the copy strings correctly
-function addListener(selector, copyString) {
-    document.querySelector(selector).addEventListener('click', () => {sendToClipboard(copyString)});
-}
-
 function sendToClipboard(stringToClipboard) {
 
     var sandbox = document.getElementById('sandbox');
@@ -149,39 +151,36 @@ function sendToClipboard(stringToClipboard) {
 }
 
 setTimeout(function(){
-    document.getElementById('collapse').addEventListener('click', function(){
-        chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
-            chrome.tabs.sendMessage(tabs[0].id,{message:"collapse_sidebar"}, function(config){
 
-            });
+    var eventNodes = {
+        collapse:"collapse_sidebar",
+        expand:"expand_sidebar",
+        autofill:"autofill_form",
+        zoom_out:"zoom_out_sidebar",
+        zoom:"zoom_sidebar",
+    };
+
+    for (var node in eventNodes) {
+        if (eventNodes.hasOwnProperty(node)) {
+            setupEvent(eventNodes, node);
+        }
+    }
+
+}, 200);
+
+// These next two functions are needed to detach the selector
+// id from the loop so the information is correct after the callback
+function addListener(selector, copyString) {
+    document.querySelector(selector).addEventListener('click', () => {
+        sendToClipboard(copyString)
+    });
+}
+
+function setupEvent(eventNodes, node) {
+    document.getElementById(node).addEventListener('click', function(){
+        chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
+            console.log('{message:eventNodes[node]}', {message:eventNodes[node]});
+            chrome.tabs.sendMessage(tabs[0].id,{message:eventNodes[node]}, function(config){ });
         });
     })
-    document.getElementById('expand').addEventListener('click', function(){
-        chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
-            chrome.tabs.sendMessage(tabs[0].id,{message:"expand_sidebar"}, function(config){
-
-            });
-        });
-    })
-    document.getElementById('zoom').addEventListener('click', function(){
-        chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
-            chrome.tabs.sendMessage(tabs[0].id,{message:"zoom_sidebar"}, function(config){
-
-            });
-        });
-    })
-    document.getElementById('zoom_out').addEventListener('click', function(){
-        chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
-            chrome.tabs.sendMessage(tabs[0].id,{message:"zoom_out_sidebar"}, function(config){
-
-            });
-        });
-    })
-    document.getElementById('autofill').addEventListener('click', function(){
-        chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
-            chrome.tabs.sendMessage(tabs[0].id,{message:"autofill_form"}, function(config){
-
-            });
-        });
-    })
-}, 200)
+}

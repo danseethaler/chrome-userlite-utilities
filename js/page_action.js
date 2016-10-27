@@ -89,16 +89,12 @@ chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
 
                 } else {
 
+                    var i = 1;
+
                     // When no hash is found we direct the user to the pages folder in the front-end
-                    div.innerHTML = '<div><button name="hash_0" class="btn button-0" style="width: calc(100% - 44px)">Pages</button> <button name="reload_1" class="reload-btn btn btn-default" data-hash-key="1" style="color: #FFF" tabindex="10">&#x21ba;</button></div>';
+                    div.innerHTML = '<div><button name="hash_' + i + '" class="btn button-' + i + '" style="width: calc(100% - 44px)" tabindex="' + i + '">Pages</button> <button name="reload_1" class="reload-btn btn btn-default" data-hash-key="1" style="color: #FFF" tabindex="10">&#x21ba;</button></div>';
 
                     main.appendChild(div.firstChild);
-
-                    var reloadButtons = document.getElementsByClassName('reload-btn');
-
-                    for (var i = 0; i < reloadButtons.length; i++) {
-                        reloadButtons[i].addEventListener('click', reloadPage);
-                    }
 
                     var config = {
                         appSide: 'front',
@@ -106,7 +102,7 @@ chrome.tabs.query({active:true,currentWindow:true}, function(tabs){
                         appId: parseInt(config.appId),
                     };
 
-                    addListener("button[name='hash_0']", JSON.stringify(config, null, 4));
+                    addListener("button[name='hash_" + i + "']", JSON.stringify(config, null, 4));
 
                 }
 

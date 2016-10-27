@@ -1,4 +1,6 @@
+
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
+
     if (message.message == 'getAppId') {
 
         var config = {
@@ -6,30 +8,17 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
             appId: false,
         };
 
+        frame = document;
         if (document.getElementById("mainframe")) {
-            var uslIframe = document.getElementById("mainframe").contentDocument;
-            var metas = uslIframe.getElementsByTagName('meta')
-
-            var domHashfrags = uslIframe.getElementsByClassName('hashFrag');
-
-            config.hashNodes = [];
-            for (var i = 0; i < domHashfrags.length; i++) {
-                config.hashNodes.push(domHashfrags[i].dataset.hashfragName);
-            }
-            config.hashNodes.reverse();
-
-        } else {
-            var metas = document.getElementsByTagName('meta');
-
-            var domHashfrags = document.getElementsByClassName('hashFrag');
-
-            config.hashNodes = [];
-            for (var i = 0; i < domHashfrags.length; i++) {
-                config.hashNodes.push(domHashfrags[i].dataset.hashfragName);
-            }
-            config.hashNodes.reverse();
-
+            frame = document.getElementById("mainframe").contentDocument;
         }
+
+        var metas = frame.getElementsByTagName('meta')
+
+        config.hashNodes = Array.from(frame.getElementsByClassName('hashFrag')).map(function(item){
+            return item.dataset.hashfragName
+        });
+        config.hashNodes.reverse();
 
         for (var i = 0; i < metas.length; i++) {
             if (metas[i].getAttribute('name') == 'usl-app-id') {
@@ -343,11 +332,8 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
 
 
         for (var i = 0; i < forms.length; i++) {
-
             var formId = forms[i].getAttribute('id');
-
             util.formFields(formId);
-
         }
     }
 });
@@ -387,42 +373,27 @@ function reloadHfragNode(node) {
     var frame = top.frames[1];
     if (!frame) frame = window;
 
-    var updateHash;
-    var hash = frame.location.hash;
-    hash = hash.replace('#!', '');
+    // Do a cached reload on the page if no hash is found
+    // The window.location = window.location loads from cache
+    if (!frame.location.hash && node == 0) return window.location = window.location;
 
-    // Do a cache reload on the page if no hash is found
-    if (!hash && node == 0) {
-        return window.location = window.location;
-    }
+    // Get the base keys from the hashFrag object
+    var hashNodes = Array.from(frame.document.getElementsByClassName('hashFrag')).map(function(item){
+        return item.dataset.hashfragName
+    });
 
-    var domHashfrags = frame.document.getElementsByClassName('hashFrag');
-
-    var hashNodes = [];
-
-    for (var i = 0; i < domHashfrags.length; i++) {
-        hashNodes.push(domHashfrags[i].dataset.hashfragName);
-    }
-
+    // Reverse the nodes to match the node key because the Alt+1 targets
+    // the top level node - so we need that to be the first in the array
     hashNodes.reverse();
 
-    var hashPieces = hash.split('||');
     if (hashNodes[node]) {
-        for (var i = 0; i < hashPieces.length; i++) {
-            if (hashPieces[i].indexOf(hashNodes[node]) === 0) {
 
-                if (hashPieces[i].search(/\|rnd:\d+/) >= 0) {
-                    newHash = hashPieces[i].replace(/\|rnd:\d+/, '|rnd:' + Math.floor(Math.random() * 9999));
-                    updateHash = hash.replace(hashPieces[i], newHash);
-                } else {
-                    updateHash = hash.replace(hashPieces[i], hashPieces[i] + '|rnd:' + Math.floor(Math.random() * 9999));
-                }
-            }
-        }
-    }
+        // Adding inline script to get access to native environment
+        // hFrag object
+        var script = document.createElement("script");
+        script.textContent = "hFrag.click({'" + hashNodes[node] + "':{'rnd':'" + Math.floor(Math.random() * 9999) + "'}}, {'replace':true});";
+        frame.document.body.appendChild(script);
 
-    if (updateHash) {
-        frame.location.hash = '#!' + updateHash;
     }
 
 }

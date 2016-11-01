@@ -38,7 +38,14 @@ var methods = {
 
         // Do a cached reload on the page if no hash is found
         // The window.location = window.location loads from cache
-        if (!frame.location.hash && node == 0) return window.location = window.location;
+        if (!frame.location.hash && node == 0) {
+
+            // Adding inline script to get access to native environment
+            var script = document.createElement("script");
+            script.textContent = "if(appLb.is_open) { appLb.reload(); } else { window.location = window.location }";
+            return frame.document.body.appendChild(script);
+
+        }
 
         // Get the base keys from the hashFrag object
         var hashNodes = Array.from(frame.document.getElementsByClassName('hashFrag')).map(function(item){
@@ -56,7 +63,7 @@ var methods = {
             var script = document.createElement("script");
 
             script.textContent = "if(appLb.is_open) { appLb.reload(); } else { hFrag.click({'" + hashNodes[node] + "':{'rnd':'" + Math.floor(Math.random() * 9999) + "'}}, {'replace':true}); }";
-            
+
             frame.document.body.appendChild(script);
 
         }

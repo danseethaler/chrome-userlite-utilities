@@ -54,7 +54,9 @@ var methods = {
             // Adding inline script to get access to native environment
             // hFrag object
             var script = document.createElement("script");
-            script.textContent = "hFrag.click({'" + hashNodes[node] + "':{'rnd':'" + Math.floor(Math.random() * 9999) + "'}}, {'replace':true});";
+
+            script.textContent = "if(appLb.is_open) { appLb.reload(); } else { hFrag.click({'" + hashNodes[node] + "':{'rnd':'" + Math.floor(Math.random() * 9999) + "'}}, {'replace':true}); }";
+            
             frame.document.body.appendChild(script);
 
         }

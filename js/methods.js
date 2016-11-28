@@ -43,7 +43,10 @@ var methods = {
             // Adding inline script to get access to native environment
             var script = document.createElement("script");
             script.id = 'reloadHfragNode';
-            script.textContent = "if(typeof appLb !== 'undefined' && appLb.is_open) { appLb.reload(); } else { window.location = window.location }";
+
+            // appLb is used to control the legacy modal state and is not
+            // available in the new `Isolated` apps using react
+            script.textContent = "if(typeof appLb === 'object' && appLb.is_open) { appLb.reload(); } else { window.location = window.location }";
             frame.document.body.appendChild(script);
             return script.parentNode.removeChild(script);
 
@@ -51,7 +54,7 @@ var methods = {
 
         // Get the base keys from the hashFrag object
         var hashNodes = Array.from(frame.document.getElementsByClassName('hashFrag')).map(function(item){
-            return item.dataset.hashfragName
+            return item.dataset.hashfragName;
         });
 
         // Reverse the nodes to match the node key because the Alt+1 targets
@@ -64,7 +67,9 @@ var methods = {
             // hFrag object
             var script = document.createElement("script");
 
-            script.textContent = "if(appLb.is_open) { appLb.reload(); } else { hFrag.click({'" + hashNodes[node] + "':{'rnd':'" + Math.floor(Math.random() * 9999) + "'}}, {'replace':true}); }";
+            // appLb is used to control the legacy modal state and is not
+            // available in the new `Isolated` apps using react
+            script.textContent = "if(typeof appLb === 'object' && appLb.is_open) { appLb.reload(); } else { hFrag.click({'" + hashNodes[node] + "':{'rnd':'" + Math.floor(Math.random() * 9999) + "'}}, {'replace':true}); }";
 
             script.id = 'reloadHfragNode';
 

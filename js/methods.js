@@ -42,8 +42,10 @@ var methods = {
 
             // Adding inline script to get access to native environment
             var script = document.createElement("script");
-            script.textContent = "if(appLb.is_open) { appLb.reload(); } else { window.location = window.location }";
-            return frame.document.body.appendChild(script);
+            script.id = 'reloadHfragNode';
+            script.textContent = "if(typeof appLb !== 'undefined' && appLb.is_open) { appLb.reload(); } else { window.location = window.location }";
+            frame.document.body.appendChild(script);
+            return script.parentNode.removeChild(script);
 
         }
 
@@ -64,7 +66,10 @@ var methods = {
 
             script.textContent = "if(appLb.is_open) { appLb.reload(); } else { hFrag.click({'" + hashNodes[node] + "':{'rnd':'" + Math.floor(Math.random() * 9999) + "'}}, {'replace':true}); }";
 
+            script.id = 'reloadHfragNode';
+
             frame.document.body.appendChild(script);
+            return script.parentNode.removeChild(script);
 
         }
 

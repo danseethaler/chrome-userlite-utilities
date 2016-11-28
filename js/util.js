@@ -174,6 +174,9 @@ var util = {
             'title': 'credit card',
             value: 4111111111111111
         }, {
+            'title': 'card number',
+            value: 4111111111111111
+        }, {
             'title': 'cv2',
             value: this.between(100, 999)
         }, {
@@ -188,6 +191,12 @@ var util = {
         }, {
             'title': 'comment',
             value: 'Dev - Testing out the comments.'
+        }, {
+            'title': 'description',
+            value: 'Dev - Testing out the comments.'
+        }, {
+            'title': 'title',
+            value: 'Development Test'
         }];
 
         for (var attr in check) {

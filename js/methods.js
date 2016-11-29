@@ -31,6 +31,39 @@ var methods = {
     reloadHfrag: function(message, sender, sendReponse){
         this.reloadHfragNode(message.node);
     },
+
+    scriptText: function(node){
+
+        return `if (typeof appLb === 'object' && appLb.is_open) {
+            appLb.reload();
+        } else if (typeof usl_dev_lib_scripts === 'object') {
+
+            // Remove the non dev scripts
+            var loadUrls = usl_dev_lib_scripts.filter(function(item){
+                return item.dev;
+            });
+
+            loadUrls = loadUrls.map(function(item){
+                // Load the promise into the loadUrls array
+                if (item.dev) return $.getScript(item.url);
+                return false;
+            });
+
+            if (loadUrls.length) {
+                Promise.all(loadUrls).then(function(){
+                    hFrag.click({` + node + `:{'rnd':Math.floor(Math.random() * 9999)}}, {'replace':true});
+                });
+            } else {
+                hFrag.click({` + node + `:{'rnd':' + Math.floor(Math.random() * 9999) + '}}, {'replace':true});
+            }
+
+
+        } else {
+            hFrag.click({` + node + `:{'rnd':' + Math.floor(Math.random() * 9999) + '}}, {'replace':true});
+        }`;
+
+    },
+
     reloadHfragNode: function(node) {
 
         var frame = top.frames[1];
@@ -69,7 +102,7 @@ var methods = {
 
             // appLb is used to control the legacy modal state and is not
             // available in the new `Isolated` apps using react
-            script.textContent = "if(typeof appLb === 'object' && appLb.is_open) { appLb.reload(); } else { hFrag.click({'" + hashNodes[node] + "':{'rnd':'" + Math.floor(Math.random() * 9999) + "'}}, {'replace':true}); }";
+            script.textContent = this.scriptText(hashNodes[node]);
 
             script.id = 'reloadHfragNode';
 

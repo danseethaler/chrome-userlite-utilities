@@ -34,9 +34,46 @@ var methods = {
 
     scriptText: function(node){
 
-        return `if (typeof appLb === 'object' && appLb.is_open) {
-            appLb.reload();
-        } else if (typeof usl_dev_lib_scripts === 'object') {
+        return `
+        // Setup the state before we load scripts which may change the state
+        var reloadSwitch = 'hFrag';
+        if (typeof ui_modal_last_options === 'object') {
+            reloadSwitch = 'modal';
+            modalOptions = ui_modal_last_options;
+        } else if (typeof appLb === 'object' && appLb.is_open) {
+            reloadSwitch = 'legModal';
+        }
+
+        function reload() {
+
+            switch (reloadSwitch) {
+                // Reload the hashFrag
+                case 'hFrag':
+                    hFrag.click({` + node + `:{rnd:Math.floor(Math.random() * 9999)}}, {'replace':true});
+                    break;
+
+                // Reload open modal (React)
+                case 'modal':
+                    // Reset the modal options after loading the scripts
+                    // The modal options may be reset in the script loading
+                    ui_modal_last_options = modalOptions;
+
+                    ui_modal_reload();
+                    break;
+
+                // Reload open legacy modal
+                case 'legModal':
+                    appLb.reload();
+
+                    break;
+                default:
+
+            }
+
+        }
+
+        // Check for any dev scripts to load before reloading the section
+        if (typeof usl_dev_lib_scripts === 'object') {
 
             // Remove the non dev scripts
             var loadUrls = usl_dev_lib_scripts.filter(function(item){
@@ -49,17 +86,20 @@ var methods = {
                 return false;
             });
 
+            // Check if we're waiting for promises to be fulfilled
             if (loadUrls.length) {
                 Promise.all(loadUrls).then(function(){
-                    hFrag.click({` + node + `:{'rnd':Math.floor(Math.random() * 9999)}}, {'replace':true});
+                    reload();
                 });
+
+            // Otherwise run the reload immediately
             } else {
-                hFrag.click({` + node + `:{'rnd':' + Math.floor(Math.random() * 9999) + '}}, {'replace':true});
+                reload();
             }
 
-
         } else {
-            hFrag.click({` + node + `:{'rnd':' + Math.floor(Math.random() * 9999) + '}}, {'replace':true});
+            // Otherwise run the reload immediately
+            reload();
         }`;
 
     },
@@ -97,11 +137,7 @@ var methods = {
         if (hashNodes[node]) {
 
             // Adding inline script to get access to native environment
-            // hFrag object
             var script = document.createElement("script");
-
-            // appLb is used to control the legacy modal state and is not
-            // available in the new `Isolated` apps using react
             script.textContent = this.scriptText(hashNodes[node]);
 
             script.id = 'reloadHfragNode';

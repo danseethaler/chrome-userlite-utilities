@@ -32,79 +32,129 @@ var methods = {
         this.reloadHfragNode(message.node);
     },
 
-    scriptText: function(node){
+    init: false,
 
-        return `
-        // Setup the state before we load scripts which may change the state
-        var reloadSwitch = 'hFrag';
-        if (typeof ui_modal_last_options === 'object') {
-            reloadSwitch = 'modal';
-            modalOptions = ui_modal_last_options;
-        } else if (typeof appLb === 'object' && appLb.is_open) {
-            reloadSwitch = 'legModal';
-        }
+    setupReloadOb: function(){
 
-        function reload() {
+        // Add the main reload object to the native environment
+        var extScriptText = `if (typeof chromeExtDevReload !== 'object') {
 
-            switch (reloadSwitch) {
-                // Reload the hashFrag
-                case 'hFrag':
-                    hFrag.click({` + node + `:{rnd:Math.floor(Math.random() * 9999)}}, {'replace':true});
-                    break;
+            var chromeExtDevReload = {
+                section: '',
+                type: '',
+                ready: true,
+                reload: function(){
 
-                // Reload open modal (React)
-                case 'modal':
-                    // Reset the modal options after loading the scripts
-                    // The modal options may be reset in the script loading
-                    ui_modal_last_options = modalOptions;
+                    if (!this.ready) return;
+                    // If there's no section and it's not a modal then return
+                    if (!this.section && ['modal', 'legModal'].indexOf(this.type) < 0) return;
 
-                    ui_modal_reload();
-                    break;
+                    switch (this.type) {
+                        // Reload the hashFrag
+                        case 'hFrag':
 
-                // Reload open legacy modal
-                case 'legModal':
-                    appLb.reload();
+                        var reloadHfragOb = {};
+                        reloadHfragOb[this.section] = {rnd:Math.floor(Math.random() * 9999)};
+                        hFrag.click(reloadHfragOb, {'replace':true});
 
-                    break;
-                default:
+                        break;
 
+                        // Reload open modal (React)
+                        case 'modal':
+                        // Reset the modal options after loading the scripts
+                        // The modal options may be reset in the script loading
+                        ui_modal_last_options = chromeExtDevReload.modalOptions;
+
+                        ui_modal_reload();
+                        break;
+
+                        // Reload open legacy modal
+                        case 'legModal':
+                        appLb.reload();
+
+                        break;
+                        default:
+                    }
+
+                    // Reset the section
+                    this.section = '';
+                    this.type = '';
+
+                }
             }
+        }`;
 
-        }
+        var frame = top.frames[1];
+        if (!frame) frame = window;
 
-        // Check for any dev scripts to load before reloading the section
+        // Adding inline script to get access to native environment
+        var script = document.createElement("script");
+        script.textContent = extScriptText;
+
+        script.id = 'extScriptText';
+
+        frame.document.body.appendChild(script);
+        script.parentNode.removeChild(script);
+
+        methods.init = true;
+
+    },
+
+    reloadDevScripts: function(){
+
+        if (!methods.init) methods.setupReloadOb();
+
+        var scriptText = `// Check for any dev scripts to load
         if (typeof usl_dev_lib_scripts === 'object') {
 
             // Remove the non dev scripts
             var loadUrls = usl_dev_lib_scripts.filter(function(item){
                 return item.dev;
-            });
-
-            loadUrls = loadUrls.map(function(item){
-                // Load the promise into the loadUrls array
+                // Return promises for all the ajax requests
+            }).map(function(item){
                 if (item.dev) return $.getScript(item.url);
                 return false;
             });
 
             // Check if we're waiting for promises to be fulfilled
             if (loadUrls.length) {
+                if (typeof ui_modal_last_options === 'object') {
+                    chromeExtDevReload.modalOptions = ui_modal_last_options;
+                    chromeExtDevReload.type = 'modal';
+                }
+                chromeExtDevReload.ready = false;
                 Promise.all(loadUrls).then(function(){
-                    reload();
+                    chromeExtDevReload.ready = true;
+                    chromeExtDevReload.reload();
                 });
 
-            // Otherwise run the reload immediately
+                // Otherwise run the reload immediately
             } else {
-                reload();
+                chromeExtDevReload.reload();
             }
 
         } else {
             // Otherwise run the reload immediately
-            reload();
+            chromeExtDevReload.reload();
         }`;
+
+        var frame = top.frames[1];
+        if (!frame) frame = window;
+
+        // Adding inline script to get access to native environment
+        var script = document.createElement("script");
+        script.textContent = scriptText;
+
+        script.id = 'reloadDevScripts';
+
+        frame.document.body.appendChild(script);
+        return script.parentNode.removeChild(script);
 
     },
 
     reloadHfragNode: function(node) {
+
+        if (!methods.init) methods.setupReloadOb();
 
         var frame = top.frames[1];
         if (!frame) frame = window;
@@ -136,9 +186,23 @@ var methods = {
 
         if (hashNodes[node]) {
 
+            var scriptText = `
+                // Setup the state before we load scripts which may change the state
+                chromeExtDevReload.type = 'hFrag';
+                if (typeof ui_modal_last_options === 'object') {
+                    chromeExtDevReload.type = 'modal';
+                } else if (typeof appLb === 'object' && appLb.is_open) {
+                    chromeExtDevReload.type = 'legModal';
+                }
+
+                console.log('chromeExtDevReload.type', chromeExtDevReload.type);
+
+                chromeExtDevReload.section = '` + hashNodes[node] + `';
+                chromeExtDevReload.reload();`;
+
             // Adding inline script to get access to native environment
             var script = document.createElement("script");
-            script.textContent = this.scriptText(hashNodes[node]);
+            script.textContent = scriptText;
 
             script.id = 'reloadHfragNode';
 
@@ -149,6 +213,8 @@ var methods = {
 
     },
     reloadHfragInterval: function(message, sender, sendReponse){
+
+        console.log('reloading hFrag in 5, 4, 3, 2, 1...');
 
         chrome.storage.sync.get({
             refreshInterval: 5000
@@ -174,6 +240,7 @@ var methods = {
     },
     reloadPageInterval: function(message, sender, sendReponse){
         console.log('reloading page in 5, 4, 3, 2, 1...');
+
         chrome.storage.sync.get({
             refreshInterval: 5000
         }, function(items) {

@@ -1,7 +1,13 @@
 function save_options() {
     var refreshInterval = document.getElementById('refresh-interval').value;
+    var userId = document.getElementById('user-id').value;
+    var passphrase = document.getElementById('passphrase').value;
+    var connectTo = document.getElementById('connectTo').value;
     chrome.storage.sync.set({
-        refreshInterval
+        refreshInterval,
+        userId,
+        passphrase,
+        connectTo
     }, function() {
         // Update status to let user know options were saved.
         var status = document.getElementById('status');
@@ -16,10 +22,11 @@ function save_options() {
 // stored in chrome.storage.
 function restore_options() {
     // Use default value refreshInterval: 100
-    chrome.storage.sync.get({
-        refreshInterval: 5000
-    }, function(items) {
-        document.getElementById('refresh-interval').value = items.refreshInterval;
+    chrome.storage.sync.get(null, function(items) {
+        document.getElementById('refresh-interval').value = items.refreshInterval||5000;
+        document.getElementById('user-id').value = items.userId||'';
+        document.getElementById('passphrase').value = items.passphrase||'';
+        document.getElementById('connectTo').value = items.connectTo||'';
     });
 }
 document.addEventListener('DOMContentLoaded', restore_options);
